@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Agenda</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_refresh">Atualizar</string>
+    <string name="title_activity_login">Login</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Senha</string>
+    <string name="prompt_name">Nome</string>
+    <string name="action_sign_in">Entrar</string>
+    <string name="action_register">Cadastre-se</string>
+    <string name="action_sign_in_short">Entrar</string>
+    <string name="error_invalid_email">Esse e-mail é inválido</string>
+    <string name="error_invalid_password">Essa senha é muito curta</string>
+    <string name="error_incorrect_password">Credenciais Inválidas</string>
+    <string name="error_email_exists">Esse e-mail já está cadastrado.</string>
+    <string name="error_field_required">Preencha esse campo</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_register">Cadastre-se</string>
+</resources>
