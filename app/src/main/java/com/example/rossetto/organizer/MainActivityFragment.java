@@ -26,7 +26,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -41,14 +40,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
  */
 public class MainActivityFragment extends Fragment {
 
-    private ArrayAdapter<String> mAdapter;
+    private CompromissoAdapter mAdapter;
     public static final String userKey = "userId";
     public static SharedPreferences prefs;
     int userId;
@@ -80,11 +78,11 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mAdapter = new ArrayAdapter<String>(
+        ArrayList<CompromissoItem> objects = new ArrayList<CompromissoItem>();
+        mAdapter = new CompromissoAdapter(
                 getActivity(),
                 R.layout.list_item_compromisso,
-                R.id.list_item_compromisso_textview,
-                new ArrayList<String>());
+                objects);
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
@@ -95,18 +93,11 @@ public class MainActivityFragment extends Fragment {
         return rootView;
     }
 
-    public class FetchCompromissoTask extends AsyncTask<Integer, Void, String[]> {
+    public class FetchCompromissoTask extends AsyncTask<Integer, Void, CompromissoItem[]> {
 
         private final String LOG_TAG = FetchCompromissoTask.class.getSimpleName();
 
-        private String getReadableDateString(long time){
-            // Because the API returns a unix timestamp (measured in seconds),
-            // it must be converted to milliseconds in order to be converted to valid date.
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-            return shortenedDateFormat.format(time);
-        }
-
-        private String[] getCompromissosFromJson(String jsonStr)
+        private CompromissoItem[] getCompromissosFromJson(String jsonStr)
                 throws JSONException {
 
             final String COMPROMISSOS = "compromissos";
@@ -118,7 +109,7 @@ public class MainActivityFragment extends Fragment {
             JSONObject json = new JSONObject(jsonStr);
             JSONArray compromissos = json.getJSONArray(COMPROMISSOS);
 
-            String[] resultStrs = new String[compromissos.length()];
+            CompromissoItem[] resultObjects = new CompromissoItem[compromissos.length()];
             for(int i = 0; i < compromissos.length(); i++) {
                 String titulo;
                 String data;
@@ -131,14 +122,15 @@ public class MainActivityFragment extends Fragment {
                 hora = compromisso.getString(HORA);
                 local = compromisso.getString(LOCAL);
 
-                resultStrs[i] = titulo + " - " + data + " - " + hora + " - " + local;
+                resultObjects[i] = new CompromissoItem(titulo, data, hora, local);
                 Log.v(LOG_TAG, titulo + " - " + data + " - " + hora + " - " + local);
             }
-            return resultStrs;
+            return resultObjects;
 
         }
+
         @Override
-        protected String[] doInBackground(Integer... params) {
+        protected CompromissoItem[] doInBackground(Integer... params) {
 
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
@@ -161,9 +153,7 @@ public class MainActivityFragment extends Fragment {
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
-                Log.v(LOG_TAG, "Antes da conexao");
                 urlConnection.connect();
-                Log.v(LOG_TAG, "Depois da conexao");
 
                 // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
@@ -214,11 +204,11 @@ public class MainActivityFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String[] result) {
+        protected void onPostExecute(CompromissoItem[] result) {
             if (result != null) {
                 mAdapter.clear();
-                for(String str : result) {
-                    mAdapter.add(str);
+                for(CompromissoItem compromisso : result) {
+                    mAdapter.add(compromisso);
                 }
                 // New data is back from the server.  Hooray!
             }

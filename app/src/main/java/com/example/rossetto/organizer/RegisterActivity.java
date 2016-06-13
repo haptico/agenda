@@ -3,33 +3,17 @@ package com.example.rossetto.organizer;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build.VERSION;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,12 +29,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -74,20 +54,20 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         setupActionBar();
-        // Set up the login form.
+        // Set up the register form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.register_email);
 
         mPasswordView = (EditText) findViewById(R.id.register_password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.register || id == EditorInfo.IME_NULL) {
-                    attemptRegister();
-                    return true;
-                }
-                return false;
-            }
-        });
+//        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+//                if (id == R.id.register || id == EditorInfo.IME_NULL) {
+//                    attemptRegister();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         mNameView = (EditText) findViewById(R.id.register_name);
 
@@ -236,32 +216,13 @@ public class RegisterActivity extends AppCompatActivity {
             mName = name;
         }
 
-        private String getQuery(Map<String, String> params) throws UnsupportedEncodingException
-        {
-            StringBuilder result = new StringBuilder();
-            boolean first = true;
-
-            for (String key : params.keySet())
-            {
-                if (first)
-                    first = false;
-                else
-                    result.append("&");
-
-                result.append(URLEncoder.encode(key, "UTF-8"));
-                result.append("=");
-                result.append(URLEncoder.encode(params.get(key), "UTF-8"));
-            }
-
-            return result.toString();
-        }
-
         @Override
         protected Boolean doInBackground(Void... params) {
 
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String retStr = null;
+            HttpTools tools = new HttpTools();
 
             try {
                 final String BASE_URL =
@@ -284,7 +245,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                 OutputStream os = urlConnection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write(getQuery(pars));
+                writer.write(tools.getQuery(pars));
                 writer.flush();
                 writer.close();
                 os.close();
@@ -318,11 +279,7 @@ public class RegisterActivity extends AppCompatActivity {
                 JSONObject user = new JSONObject(retStr);
                 if (user.has("id")) {
                     int uId = user.getInt("id");
-                    if(uId == 0){
-                        return false;
-                    }else{
-                        return true;
-                    }
+                    return uId != 0;
                 } else {
                     return false;
                 }

@@ -4,7 +4,7 @@
     <string name="action_refresh">Atualizar</string>
     <string name="title_activity_login">Login</string>
 
-    <!-- Strings related to login -->
+    <!-- Strings related to login/register -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Senha</string>
     <string name="prompt_name">Nome</string>
@@ -20,4 +20,11 @@
         completions."
     </string>
     <string name="title_activity_register">Cadastre-se</string>
+
+    <string name="prompt_compromisso">Compromisso</string>
+    <string name="prompt_data">Data</string>
+    <string name="prompt_hora">Hora</string>
+    <string name="prompt_local">Local</string>
+    <string name="action_novo_compromisso">Criar Compromisso</string>
+
 </resources>
