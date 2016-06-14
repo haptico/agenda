@@ -219,59 +219,19 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
             String retStr = null;
-            HttpTools tools = new HttpTools();
+            String url = "http://52.203.161.136/usuarios/create";
+
+            HashMap<String, String> pars = new HashMap<String, String>();
+            pars.put("email", mEmail);
+            pars.put("senha", mPassword);
+            pars.put("nome", mName);
 
             try {
-                final String BASE_URL =
-                        "http://52.203.161.136/usuarios/create";
-
-                Uri builtUri = Uri.parse(BASE_URL).buildUpon().build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(true);
-
-                HashMap<String, String> pars = new HashMap<String, String>();
-                pars.put("email", mEmail);
-                pars.put("senha", mPassword);
-                pars.put("nome", mName);
-
-                OutputStream os = urlConnection.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write(tools.getQuery(pars));
-                writer.flush();
-                writer.close();
-                os.close();
-
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                retStr = buffer.toString();
+                HttpTools tools = new HttpTools(url, pars);
+                retStr = tools.doPost();
             } catch (IOException e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -294,7 +254,6 @@ public class RegisterActivity extends AppCompatActivity {
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
-
             if (success) {
                 finish();
             } else {

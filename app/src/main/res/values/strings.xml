@@ -26,5 +26,10 @@
     <string name="prompt_hora">Hora</string>
     <string name="prompt_local">Local</string>
     <string name="action_novo_compromisso">Criar Compromisso</string>
+    <string name="action_atualizar_compromisso">Atualizar Compromisso</string>
+    <string name="action_edit_compromisso">Editar</string>
+    <string name="action_delete_compromisso">Excluir</string>
+
+    <string name="activity_compromisso">Compromisso</string>
 
 </resources>

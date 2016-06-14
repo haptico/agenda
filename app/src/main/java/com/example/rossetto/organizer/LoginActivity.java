@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -175,6 +176,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        SharedPreferences.Editor editor = MainActivityFragment.prefs.edit();
+        editor.putBoolean(MainActivityFragment.exitKey, true);
+        editor.commit();
+        finish();
+    }
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
@@ -371,80 +379,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mPassword = password;
         }
 
-        private String getQuery(Map<String, String> params) throws UnsupportedEncodingException
-        {
-            StringBuilder result = new StringBuilder();
-            boolean first = true;
-
-            for (String key : params.keySet())
-            {
-                if (first)
-                    first = false;
-                else
-                    result.append("&");
-
-                result.append(URLEncoder.encode(key, "UTF-8"));
-                result.append("=");
-                result.append(URLEncoder.encode(params.get(key), "UTF-8"));
-            }
-
-            return result.toString();
-        }
-
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
             String retStr = null;
+            String url = "http://52.203.161.136/login";
+            HashMap<String, String> pars = new HashMap<String, String>();
+            pars.put("email", mEmail);
+            pars.put("senha", mPassword);
 
             try {
-                final String BASE_URL =
-                        "http://52.203.161.136/login";
-
-                Uri builtUri = Uri.parse(BASE_URL).buildUpon().build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("POST");
-                urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(true);
-
-                HashMap<String, String> pars = new HashMap<String, String>();
-                pars.put("email", mEmail);
-                pars.put("senha", mPassword);
-
-                OutputStream os = urlConnection.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write(getQuery(pars));
-                writer.flush();
-                writer.close();
-                os.close();
-
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                retStr = buffer.toString();
+                HttpTools tools = new HttpTools(url, pars);
+                retStr = tools.doPost();
             } catch (IOException e) {
+                e.printStackTrace();
                 return false;
             }
 
@@ -463,15 +411,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
             }
 
-            // TODO: register the new account here.
-            return true;
+            return false;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
-
             if (success) {
                 finish();
             } else {

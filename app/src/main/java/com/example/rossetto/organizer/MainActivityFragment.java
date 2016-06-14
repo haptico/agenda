@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -48,6 +49,7 @@ public class MainActivityFragment extends Fragment {
 
     private CompromissoAdapter mAdapter;
     public static final String userKey = "userId";
+    public static final String exitKey = "exit";
     public static SharedPreferences prefs;
     int userId;
 
@@ -58,14 +60,18 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
         userId = prefs.getInt(userKey, 0);
         if(userId == 0){
+            Boolean exit = prefs.getBoolean(exitKey, false);
+            if(exit){
+                getActivity().finish();
+            }
             Intent login = new Intent(getActivity(), LoginActivity.class);
             startActivity(login);
         }else{
@@ -89,7 +95,15 @@ public class MainActivityFragment extends Fragment {
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_compromisso);
         listView.setAdapter(mAdapter);
-
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                CompromissoItem comp = mAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), ViewCompromissoActivity.class)
+                        .putExtra("id", comp.getId());
+                startActivity(intent);
+            }
+        });
         return rootView;
     }
 
@@ -101,6 +115,7 @@ public class MainActivityFragment extends Fragment {
                 throws JSONException {
 
             final String COMPROMISSOS = "compromissos";
+            final String ID = "id";
             final String TITULO = "compromisso";
             final String DATA = "data";
             final String HORA = "hora";
@@ -111,19 +126,20 @@ public class MainActivityFragment extends Fragment {
 
             CompromissoItem[] resultObjects = new CompromissoItem[compromissos.length()];
             for(int i = 0; i < compromissos.length(); i++) {
+                String id;
                 String titulo;
                 String data;
                 String hora;
                 String local;
 
                 JSONObject compromisso = compromissos.getJSONObject(i);
+                id = compromisso.getString(ID);
                 titulo = compromisso.getString(TITULO);
                 data = compromisso.getString(DATA);
                 hora = compromisso.getString(HORA);
                 local = compromisso.getString(LOCAL);
 
-                resultObjects[i] = new CompromissoItem(titulo, data, hora, local);
-                Log.v(LOG_TAG, titulo + " - " + data + " - " + hora + " - " + local);
+                resultObjects[i] = new CompromissoItem(id, titulo, data, hora, local);
             }
             return resultObjects;
 
@@ -132,70 +148,23 @@ public class MainActivityFragment extends Fragment {
         @Override
         protected CompromissoItem[] doInBackground(Integer... params) {
 
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
             // Will contain the raw JSON response as a string.
             String jsonStr = null;
             int uId = params[0];
             String userId = Integer.toString(uId);
+            String url = "http://52.203.161.136/usuarios/"+userId+"/compromissos";
 
             try {
-                final String BASE_URL =
-                        "http://52.203.161.136/usuarios/"+userId+"/compromissos?";
-
-                Uri builtUri = Uri.parse(BASE_URL).buildUpon().build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line);
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                jsonStr = buffer.toString();
+                HttpTools tools = new HttpTools(url);
+                jsonStr = tools.doGet();
             } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
-                // to parse it.
+                e.printStackTrace();
                 return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
             }
 
             try {
                 return getCompromissosFromJson(jsonStr);
             } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
             }
 
