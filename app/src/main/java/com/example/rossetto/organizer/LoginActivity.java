@@ -32,6 +32,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,7 +80,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        setupActionBar();
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -162,17 +163,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 populateAutoComplete();
             }
-        }
-    }
-
-    /**
-     * Set up the {@link android.app.ActionBar}, if the API is available.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private void setupActionBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            // Show the Up button in the action bar.
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -369,7 +359,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Integer> {
 
         private final String mEmail;
         private final String mPassword;
@@ -380,7 +370,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
 
             String retStr = null;
             String url = "http://52.203.161.136/login";
@@ -393,34 +383,37 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 retStr = tools.doPost();
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;
+                return null;
             }
 
             try {
                 JSONObject user = new JSONObject(retStr);
                 int uId = user.getInt("id");
                 if(uId == 0){
-                    return false;
+                    return null;
                 }else{
                     SharedPreferences.Editor editor = MainActivityFragment.prefs.edit();
                     editor.putInt(MainActivityFragment.userKey, uId);
+                    editor.putBoolean(MainActivityFragment.exitKey, false);
                     editor.commit();
-                    return true;
+                    return uId;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            return false;
+            return null;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Integer id) {
             mAuthTask = null;
-            showProgress(false);
-            if (success) {
+            if (id != null) {
+                String token = MainActivityFragment.prefs.getString(MainActivityFragment.userToken, null);
+                InstanceIDService.sendRegistrationToServer(token);
                 finish();
             } else {
+                showProgress(false);
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }

@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -255,6 +256,11 @@ public class RegisterActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
             if (success) {
+                Toast.makeText(
+                        RegisterActivity.this,
+                        "Usuário registrado com sucesso. Faça login para gerenciar seus compromissos.",
+                        Toast.LENGTH_SHORT
+                ).show();
                 finish();
             } else {
                 mEmailView.setError(getString(R.string.error_email_exists));

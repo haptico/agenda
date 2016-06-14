@@ -49,9 +49,11 @@ public class MainActivityFragment extends Fragment {
 
     private CompromissoAdapter mAdapter;
     public static final String userKey = "userId";
+    public static final String userToken = "token";
     public static final String exitKey = "exit";
     public static SharedPreferences prefs;
     int userId;
+    Boolean exit = false;
 
 
     public MainActivityFragment() {
@@ -61,6 +63,9 @@ public class MainActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(exitKey, false);
+        editor.commit();
     }
 
     @Override
@@ -68,12 +73,13 @@ public class MainActivityFragment extends Fragment {
         super.onResume();
         userId = prefs.getInt(userKey, 0);
         if(userId == 0){
-            Boolean exit = prefs.getBoolean(exitKey, false);
+            exit = prefs.getBoolean(exitKey, false);
             if(exit){
                 getActivity().finish();
+            }else {
+                Intent login = new Intent(getActivity(), LoginActivity.class);
+                startActivity(login);
             }
-            Intent login = new Intent(getActivity(), LoginActivity.class);
-            startActivity(login);
         }else{
             FetchCompromissoTask task = new FetchCompromissoTask();
             task.execute(userId);

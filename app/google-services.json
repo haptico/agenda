@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "598178606079",
+    "firebase_url": "https://organizer-8504a.firebaseio.com",
+    "project_id": "organizer-8504a",
+    "storage_bucket": "organizer-8504a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:598178606079:android:99bbe7c4eb762db2",
+        "android_client_info": {
+          "package_name": "com.example.rossetto.organizer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "598178606079-nthkrmio70cjsi63fde5ofqb7lq0vqhe.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "598178606079-op31f6vnoj9o4u8jcpjkr0tdn5g8h0la.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMi2tWDAgYM__qmyezGytMLGjqRCFsyxk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
