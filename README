@@ -1,0 +1,83 @@
+1) Motivações
+
+A motivação principal dessa solução é o princípio "simple is better". Portanto, 
+todas as escolhas tecnológicas foram realizadas de forma a manter a solução o 
+mais simples possível.
+
+Essa solução conta com um webservice desenvolvido e disponibilizado apenas para 
+esse propósito. As chamadas para o webservice podem ser vistas no código, onde as
+ações exigem sincronização com o servidor onde estão armazenadas as informações. 
+Não há armazenamento de dados no dispositivo onde a aplicação está instalada. 
+Apenas configurações e flags são persistidas no dispositivo.
+
+O Android Studio foi utilizado no desenvolvimento desse aplicativo. Dessa forma,
+tentamos manter a aplicação o mais adequada possível aos design patterns do google,
+utilizando templates fornecidos pelo próprio Android Studio em determindas 
+situações.
+
+O serviço de notificações disponibilizado para esse aplicativo já utiliza a nova 
+ferramenta de cloud messaging do google, o FCM (Firebase Cloud Messaging), 
+substituto do GCM (Google Cloud Messaging). As notificações são enviadas de 
+acordo com a configuração definida pelo usuário no aplicativo. 
+
+Não estamos efetuando nenhum tipo de filtros na listagem dos compromissos no 
+aplicativo. O usuário pode visualizar compromissos passados e futuros. Dessa forma,
+A gestão dos compromissos fica por conta do usuário. Ele tem a escolha de excluir 
+um compromisso do aplicativo se não quiser mais visualisá-lo.
+
+
+2) Dependências
+
+As seguintes ferramentas são necessárias para a correta instalação e funcionamento 
+dessa solução:
+
+Build:
+- SDK Android
+- Android Studio
+- Gradle v2.1.2 (caso não seja possível com o Android Studio)
+
+Instalação e Execução:
+- Dispositivo Android
+
+
+3) Instruções de instalação/execução:
+
+O código fonte dessa solução está disponivel no repositório abaixo:
+https://github.com/haptico/agenda.git
+
+3.1) Build
+Build com Android Studio: recomendamos a utilização dessa ferramenta para realizar o 
+build do app, uma vez que ela define variáveis de ambiente necessárias para o build. 
+
+Build com Gradle script: Caso não não seja possível utilizar o Android Studio, o 
+build do app pode ser realizado com o gradle. Para isso, deve ser criado um arquivo 
+chamado "local.properties" no diretório raiz do projeto contendo o caminho para o SDK
+do Android. Após a criação desse arquivo, executar o comando "gradlew assembleDebug" 
+(para propósitos de testes apenas). O apk (arquivo instalador do app) será gerado no 
+seguinte diretório: "*diretorio_raiz*/app/build/outputs/apk/"
+
+3.2) Instalação
+Uma vez gerado o arquivo apk nas etapas acima, é necessário transferi-lo para um 
+dispositivo com SO Android para que este possa instalar o aplicativo. Uma vez que 
+o apk foi transferido para o dispositivo, basta clicar no arquivo e deixá-lo ser 
+instalado pelo próprio Android. Pode ser necessário permitir instalação de software 
+não confiáveis, uma vez que essa aplicação não foi "assinada" e disponibilizada na 
+Play Store.
+
+3.3) Execução
+Uma vez instalado, ao ser executado, uma tela de login será apresentada. Caso não
+possua conta, basta clicar em "Cadastre-se". Forneça suas credenciais e faça o login
+em seguida. Só é necessário realizar o login no primeiro acesso ao aplicativo. As 
+credenciais do acesso ficam armazenadas para utilizações futuras.
+
+Após o login, já é possível criar seus compromissos clicando no botão com o símbolo 
+de "+". Uma vez criado um compromisso, é possível visualizá-lo, clicando-se sobre ele 
+na tela inicial. Na tela de visualização, o usuário pode optar por editar ou excluir o
+compromisso.
+
+Nas configurações, é possível definir a antecedência que deseja que os lembretes de
+compromisso sejam enviados. Quando a antecedência definida pelo usuário for atingida,
+ele receberá uma notificação de lembrete do compromisso.
+
+Mais informações sobre o funcionamento do aplicativo podem ser encontradas nos 
+comentários contidos no código.
