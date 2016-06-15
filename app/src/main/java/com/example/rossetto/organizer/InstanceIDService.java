@@ -7,6 +7,9 @@ import android.util.Log;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
+import java.io.IOException;
+import java.util.HashMap;
+
 
 public class InstanceIDService extends FirebaseInstanceIdService {
 
@@ -38,12 +41,22 @@ public class InstanceIDService extends FirebaseInstanceIdService {
      * @param token The new token.
      */
     public static void sendRegistrationToServer(String token) {
+        String oldToken = MainActivityFragment.prefs.getString(MainActivityFragment.userToken, "none");
         SharedPreferences.Editor editor = MainActivityFragment.prefs.edit();
         editor.putString(MainActivityFragment.userToken, token);
         editor.commit();
         int userId = MainActivityFragment.prefs.getInt(MainActivityFragment.userKey, 0);
         if (userId != 0){
-            // TODO send user_id and token to server
+            String url = "http://52.203.161.136/usuarios/"+userId+"/token";
+            HashMap<String, String> pars = new HashMap<String, String>();
+            pars.put("old_token", oldToken);
+            pars.put("token", token);
+            try {
+                HttpTools tools = new HttpTools(url, pars);
+                tools.doPut();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -16,12 +16,14 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -392,11 +394,30 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 if(uId == 0){
                     return null;
                 }else{
-                    SharedPreferences.Editor editor = MainActivityFragment.prefs.edit();
-                    editor.putInt(MainActivityFragment.userKey, uId);
-                    editor.putBoolean(MainActivityFragment.exitKey, false);
-                    editor.commit();
-                    return uId;
+                    String userId = Integer.toString(uId);
+                    String token = MainActivityFragment.prefs.getString(MainActivityFragment.userToken, "none");
+                    int iTIme = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getInt(getString(R.string.pref_notify_key), 15);;
+                    String notify_time = Integer.toString(iTIme);
+                    String tokenUrl = "http://52.203.161.136/usuarios/"+userId+"/token";
+                    HashMap<String, String> tokenPars = new HashMap<String, String>();
+                    tokenPars.put("token", token);
+                    tokenPars.put("notify_time", notify_time);
+                    try {
+                        HttpTools tools = new HttpTools(tokenUrl, tokenPars);
+                        JSONObject tokenRet = new JSONObject(tools.doPost());
+                        if (tokenRet.has("success")) {
+                            SharedPreferences.Editor editor = MainActivityFragment.prefs.edit();
+                            editor.putInt(MainActivityFragment.userKey, uId);
+                            editor.putBoolean(MainActivityFragment.exitKey, false);
+                            editor.commit();
+                            return uId;
+                        }else{
+                            return null;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -409,8 +430,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onPostExecute(final Integer id) {
             mAuthTask = null;
             if (id != null) {
-                String token = MainActivityFragment.prefs.getString(MainActivityFragment.userToken, null);
-                InstanceIDService.sendRegistrationToServer(token);
                 finish();
             } else {
                 showProgress(false);

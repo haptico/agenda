@@ -15,11 +15,17 @@
  */
 package com.example.rossetto.organizer;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -28,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,9 +49,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-/**
- * Encapsulates fetching the forecast and displaying it as a {@link ListView} layout.
- */
 public class MainActivityFragment extends Fragment {
 
     private CompromissoAdapter mAdapter;
@@ -52,6 +56,9 @@ public class MainActivityFragment extends Fragment {
     public static final String userToken = "token";
     public static final String exitKey = "exit";
     public static SharedPreferences prefs;
+    private View mListView;
+    private View mProgressView;
+
     int userId;
     Boolean exit = false;
 
@@ -81,8 +88,13 @@ public class MainActivityFragment extends Fragment {
                 startActivity(login);
             }
         }else{
-            FetchCompromissoTask task = new FetchCompromissoTask();
-            task.execute(userId);
+            if (isNetworkAvailable()) {
+                showProgress(true);
+                FetchCompromissoTask task = new FetchCompromissoTask();
+                task.execute(userId);
+            }else {
+                Toast.makeText(getActivity(), "Não foi possível acessar seus compromissos. Verifique sua conexão à internet.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -98,6 +110,8 @@ public class MainActivityFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        mListView = rootView.findViewById(R.id.listview_compromisso);
+        mProgressView = rootView.findViewById(R.id.main_progress);
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_compromisso);
         listView.setAdapter(mAdapter);
@@ -111,6 +125,46 @@ public class MainActivityFragment extends Fragment {
             }
         });
         return rootView;
+    }
+
+    public boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mListView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
     }
 
     public class FetchCompromissoTask extends AsyncTask<Integer, Void, CompromissoItem[]> {
@@ -174,7 +228,6 @@ public class MainActivityFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            // This will only happen if there was an error getting or parsing the forecast.
             return null;
         }
 
@@ -185,8 +238,8 @@ public class MainActivityFragment extends Fragment {
                 for(CompromissoItem compromisso : result) {
                     mAdapter.add(compromisso);
                 }
-                // New data is back from the server.  Hooray!
             }
+            showProgress(false);
         }
     }
 }

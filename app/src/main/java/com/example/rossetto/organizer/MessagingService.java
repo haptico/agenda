@@ -15,8 +15,6 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.StringBufferInputStream;
-
 public class MessagingService extends FirebaseMessagingService {
 
     private static final String TAG = MessagingService.class.getSimpleName();
@@ -29,17 +27,12 @@ public class MessagingService extends FirebaseMessagingService {
     // [START receive_message]
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // TODO(developer): Handle FCM messages here.
-        // If the application is in the foreground handle both data and notification messages here.
-        // Also if you intend on generating your own notifications as a result of a received FCM
-        // message, here is where that should be initiated. See sendNotification method below.
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message Body: " + remoteMessage.getData());
         JSONObject jObj = new JSONObject(remoteMessage.getData());
         try {
             String titulo = jObj.getString("titulo");
             String corpo = jObj.getString("corpo");
-            sendNotification(titulo, corpo);
+            sendNotification(titulo, "Começará às "+corpo);
         } catch (JSONException e){
             e.printStackTrace();
         }
@@ -49,7 +42,7 @@ public class MessagingService extends FirebaseMessagingService {
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @params MessageTitle FCM message title, messageBody FCM message body.
      */
     private void sendNotification(String messageTitle, String messageBody) {
         Intent intent = new Intent(this, MainActivity.class);
@@ -59,7 +52,7 @@ public class MessagingService extends FirebaseMessagingService {
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_stat_name)
+                .setSmallIcon(R.drawable.ic_assignment_white)
                 .setContentTitle(messageTitle)
                 .setContentText(messageBody)
                 .setAutoCancel(true)

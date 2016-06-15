@@ -276,7 +276,6 @@ public class EditCompromissoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            // This will only happen if there was an error getting or parsing the forecast.
             return null;
         }
 
